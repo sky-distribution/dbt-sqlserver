@@ -2,6 +2,7 @@
    {#- TODO: add contracts here when in dbt 1.5 -#}
    {%- set sql_header = config.get('sql_header', none) -%}
    {%- set as_columnstore = config.get('as_columnstore', default=true) -%}
+   {%- set query_hints = config.get('query_hints', default=None) -%}
    {%- set temp_view_sql = sql.replace("'", "''") -%}
    {%- set tmp_relation = relation.incorporate(
         path={"identifier": relation.identifier.replace("#", "") ~ '_temp_view'},
@@ -23,6 +24,7 @@
    SELECT *
    INTO {{ relation.include(database=False, schema=(not temporary))  }}
    FROM {{ tmp_relation }}
+   {% if query_hints %}OPTION ({{ query_hints }}){% endif %}
 
    -- drop temp view
    {{ sqlserver__drop_relation_script(tmp_relation) }}
